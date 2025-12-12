@@ -1,168 +1,131 @@
 import {
-  ActivityIndicator,
-  Dimensions,
-  FlatList,
   Image,
-  KeyboardAvoidingView,
   Platform,
   Pressable,
-  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   TextInput,
   View,
+  VirtualizedList,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Icon from "react-native-vector-icons/FontAwesome";
-import { useEffect, useRef, useState } from "react";
+import { useEffect,  useState } from "react";
 import Banner from "../componets/Banner";
-import { typeCoffee } from "../data/type";
 import { getProduct } from "../action/getProduct";
 import Card from "../componets/Card";
-import { usesearchModal } from "../store/search";
 import { useProductModal } from "../store/storeProduct";
-function TypesScreens({navigation}) {
+
+function TypesScreens({ navigation }) {
   let [searchInput, setSearch] = useState("");
-  let [Loading, setLoading] = useState(false);
-  const scrollViewRef = useRef();
-  let [typecoffee, settypecoffee] = useState("");
+  let [, setLoading] = useState(false);
+
+  let [typecoffee, ] = useState("hot");
   let [Result, setResult] = useState(null);
-  let {search,addsearch,removesearch}=usesearchModal((state)=>state)
-  let {Product,addProduct,removeProduct,updateProduct}=useProductModal((state)=>state)
-useEffect(()=>{
-  
-  if(Result?.length>0&&searchInput){
-    setResult(Result.filter((ele)=>ele.title.includes(searchInput)))
-  }
-  if(!Boolean(searchInput)){
-    setResult(Product)
-  }
+  let { Product, addProduct } = useProductModal(
+    (state) => state
+  );
+  useEffect(() => {
+    if (Result?.length > 0 && searchInput) {
+      setResult(Result.filter((ele) => ele.title.includes(searchInput)));
+    }
+    if (!Boolean(searchInput)) {
+      setResult(Product);
+    }
 
-  scrollViewRef.current.scrollToEnd({ animated: true })
-},[searchInput])
+    // scrollViewRef.current.scrollToEnd({ animated: true });
+  }, [searchInput]);
+
+  const getItem = (data, index) => data[index];
+  const getItemCount = (data) => data.length;
+
+  useEffect(() => {
+    setLoading(true);
+    getProduct(typecoffee).then((res) => {
+      setResult(res);
+      addProduct(res);
+      setLoading(false);
+    });
+  }, []);
+
   return (
-    <KeyboardAvoidingView style={{flex:1,}} behavior={Platform.OS=="ios"?"padding":"height"} keyboardVerticalOffset={Platform.OS=="ios"?0:0} >
-    <ScrollView style={styles.container}  ref={scrollViewRef}>
-      <StatusBar
-        animated={true}
-        backgroundColor="#61dafb"
-        barStyle={"light-content"}
-      />
-        
-      <LinearGradient colors={["#313131", "#222222"]} style={styles.styleGrad}>
-        <View style={styles.styleProfile}>
-          <View>
-            <Text style={[styles.text]}>Location</Text>
-            <Text style={styles.textWhite}>Bilzen, Tanjungbalai</Text>
-          </View>
-          <View>
-            <Image source={require("../assets/profile.png")} />
-          </View>
-        </View>
-        <View style={styles.searchSection}>
-          <Icon
-            style={styles.searchIcon}
-            name="search"
-            size={20}
-            color="#fff"
-            onPress={()=>navigation.navigate("Home")}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="User Nickname"
-            onChangeText={setSearch}
-            underlineColorAndroid="transparent"
-            value={searchInput}
-          
-          />
-          <Pressable style={styles.menu}>
-            <Image
-              source={require("../assets/setting-4.png")}
-              width={20}
-              height={20}
-            />
-          </Pressable>
-        </View>
-      </LinearGradient>
-      <Banner />
-     <View style={{flex:2,alignItems:"center",marginVertical:20}}>
-      <FlatList
-        // numColumns={2}
-       
-        horizontal
-        style={{alignSelf:"center"}}
-        data={typeCoffee}
-        renderItem={({ item }) => {
-          return (
-            <Pressable
-              style={[
-                styles.typeStyle,
-                typecoffee == item.type ? styles.active : null,
-              ]}
-              onPress={() => {
-                setLoading(true);
-                settypecoffee(item.type);
-
-                getProduct(item.type)
-                  .then((res) => {
-                    setResult(res);
-                    addProduct(res)
-                  })
-                  .catch(() => {
-                    alert("error in fetch data");
-                  })
-                  .finally(() => {
-                    setLoading(false);
-                  });
-              }}
-              
-            >
-              <Text
-                style={{ color: typecoffee == item.type ? "white" : "black" }}
-              >
-                {item.type}
-              </Text>
-            </Pressable>
-          );
-        }}
-        keyExtractor={(item) => item.id}
-        ItemSeparatorComponent={<View style={{ height: 16 }} />}
-        ListEmptyComponent={
-          <Text style={styles.EmtpyText}>No product found</Text>
-        }
-
-      />
-      
-        {Loading ? (
-          <View>
-            <ActivityIndicator size={"large"} color={"000000"} />
-          </View>
-        ) : null}
-
-        <FlatList
-          
-          style={{ paddingVertical: 10,marginBottom:100 }}
-          data={Result}
-          horizontal
-          renderItem={({ item }) => {
-
-            return <Pressable onPress={()=>navigation.navigate("ProductDetail",{item:item})}>
-                <Card {...item} />
-                </Pressable>;
-          }}
-          keyExtractor={(item) => item.id}
-          ItemSeparatorComponent={<View style={{ height: 16 }} />}
+    <View
+      style={{ flex: 1 }}
+      behavior={Platform.OS == "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+    >
+      <View style={styles.container}>
+        <StatusBar
+          animated={true}
+          backgroundColor="#61dafb"
+          barStyle={"light-content"}
         />
-     </View>
-    </ScrollView>
-    </KeyboardAvoidingView>
+
+        <LinearGradient
+          colors={["#313131", "#222222"]}
+          style={styles.styleGrad}
+        >
+          <View style={styles.styleProfile}>
+            <View>
+              <Text style={[styles.text]}>Location</Text>
+              <Text style={styles.textWhite}>Bilzen, Tanjungbalai</Text>
+            </View>
+            <View>
+              <Image source={require("../assets/profile.png")} />
+            </View>
+          </View>
+          <View style={styles.searchSection}>
+            <Icon
+              style={styles.searchIcon}
+              name="search"
+              size={20}
+              color="#fff"
+              onPress={() => navigation.navigate("Home")}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="User Nickname"
+              onChangeText={setSearch}
+              underlineColorAndroid="transparent"
+              value={searchInput}
+            />
+            <Pressable style={styles.menu}>
+              <Image
+                source={require("../assets/setting-4.png")}
+                width={20}
+                height={20}
+              />
+            </Pressable>
+          </View>
+        </LinearGradient>
+        <Banner />
+        <View style={{ flex: 5, alignItems: "center", marginVertical: 20 }}>
+          <VirtualizedList
+            style={{ paddingVertical: 10, marginBottom: 100 }}
+            data={Result || []}
+            initialNumToRender={10} // عدد العناصر التي سيتم عرضها أولاً
+            renderItem={({ item }) => (
+              <Pressable
+                onPress={() => navigation.navigate("ProductDetail", { item })}
+              >
+                <Card {...item} />
+              </Pressable>
+            )}
+            keyExtractor={(item) => item.id.toString()} // تأكدي أن id string
+            getItemCount={getItemCount}
+            getItem={getItem}
+            ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
+          />
+        </View>
+      </View>
+    </View>
   );
 }
 export default TypesScreens;
 const styles = StyleSheet.create({
   container: {
-    flex: 1
+    flex: 1,
   },
   styleGrad: {
     height: 300,
@@ -197,7 +160,7 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: "#313131",
     color: "#989898",
-    flex:1
+    flex: 1,
   },
   menu: {
     backgroundColor: "#C67C4E",

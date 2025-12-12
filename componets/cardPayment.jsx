@@ -1,41 +1,17 @@
-import { LinearGradient } from "expo-linear-gradient";
-import React, { useEffect, useMemo, useState } from "react";
-import {
-  Alert,
-  Button,
-  Image,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import  { useMemo, useState } from "react";
+import { Alert, StyleSheet } from "react-native";
 import { useOrderModal } from "../store/storeCart";
-import {
-  AddressSheet,
-  CardField,
-  CardForm,
-  CardFormView,
-  PlatformPay,
-  PlatformPayButton,
-  useConfirmPayment,
-  usePlatformPay,
-  useStripe,
-} from "@stripe/stripe-react-native";
-import { Screen } from "react-native-screens";
-import PaymentScreen from "../screens/PaymentScreen";
+import { CardForm, useStripe } from "@stripe/stripe-react-native";
 import { Colors } from "react-native/Libraries/NewAppScreen";
 
-
 function CardPayment() {
-  let [cardDetail, setCardDetail] = useState({});
+  let [, setCardDetail] = useState({});
   const { initPaymentSheet, presentPaymentSheet, confirmPaymentSheetPayment } =
     useStripe();
-  const [paymentSheetEnabled, setPaymentSheetEnabled] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState(null);
-  let { order, addOrder, updateOrder } = useOrderModal((state) => state);
+  const [, setPaymentSheetEnabled] = useState(false);
+  const [, setLoading] = useState(false);
+  const [, setPaymentMethod] = useState(null);
+  let { order } = useOrderModal((state) => state);
   // const { initPaymentSheet, presentPaymentSheet } = useStripe();
   let totalPrice = useMemo(() => {
     return order.reduce((total, ele) => ele?.id * ele?.count + total, 0);
@@ -56,7 +32,7 @@ function CardPayment() {
         }),
       }
     );
-    console.log(response, "response");
+
     const { clientSecret } = await response.json();
     return clientSecret;
   };
@@ -67,27 +43,27 @@ function CardPayment() {
       const { paymentIntent } = await fetchPaymentSheetParams();
 
       const address = {
-        city: 'San Francisco',
-        country: 'AT',
-        line1: '510 Townsend St.',
-        line2: '123 Street',
-        postalCode: '94102',
-        state: 'California',
+        city: "San Francisco",
+        country: "AT",
+        line1: "510 Townsend St.",
+        line2: "123 Street",
+        postalCode: "94102",
+        state: "California",
       };
       const billingDetails = {
-        name: 'Jane Doe',
-        email: 'foo@bar.com',
-        phone: '555-555-555',
+        name: "Jane Doe",
+        email: "foo@bar.com",
+        phone: "555-555-555",
         address: address,
       };
 
       const { error, paymentOption } = await initPaymentSheet({
         paymentIntentClientSecret: paymentIntent,
         customFlow: true,
-        merchantDisplayName: 'Example Inc.',
-        style: 'automatic',
-        googlePay: { merchantCountryCode: 'US', testEnv: true },
-        returnURL: 'stripe-example://stripe-redirect',
+        merchantDisplayName: "Example Inc.",
+        style: "automatic",
+        googlePay: { merchantCountryCode: "US", testEnv: true },
+        returnURL: "stripe-example://stripe-redirect",
         defaultBillingDetails: billingDetails,
       });
 
@@ -100,7 +76,6 @@ function CardPayment() {
         setPaymentMethod(paymentOption);
       }
     } catch (error) {
-      console.log('error', error);
     } finally {
       setLoading(false);
     }
@@ -126,21 +101,21 @@ function CardPayment() {
     if (error) {
       Alert.alert(`Error code: ${error.code}`, error.message);
     } else {
-      Alert.alert('Success', 'The payment was confirmed successfully!');
+      Alert.alert("Success", "The payment was confirmed successfully!");
       setPaymentSheetEnabled(false);
     }
     setLoading(false);
   };
- 
-  return (<>
-    <CardForm
-      style={{height:200,width:"auto",margin:20}}
-      onFormComplete={(complete)=>setCardDetail(complete)}
-      dangerouslyGetFullCardDetails={true}
-    />
-    {/* <AddressSheet visible={true}/> */}
-    {/* <AddressCollectionMode /> */}
 
+  return (
+    <>
+      <CardForm
+        style={{ height: 200, width: "auto", margin: 20 }}
+        onFormComplete={(complete) => setCardDetail(complete)}
+        dangerouslyGetFullCardDetails={true}
+      />
+      <AddressSheet visible={true}/>
+      <AddressCollectionMode />
     </>
   );
 }
@@ -151,8 +126,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   section: {
     marginTop: 40,
@@ -160,11 +135,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     marginBottom: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   paymentMethodTitle: {
     color: Colors.slate,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   image: {
     width: 26,
@@ -173,7 +148,7 @@ const styles = StyleSheet.create({
   text: {
     color: Colors.white,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginLeft: 12,
   },
 });

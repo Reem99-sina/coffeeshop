@@ -1,8 +1,7 @@
-import { CardField, isPlatformPaySupported, PlatformPay, PlatformPayButton, StripeProvider } from "@stripe/stripe-react-native";
+
 import { ScrollView, StatusBar, StyleSheet, Text, View } from "react-native";
 import CardPayment from "../componets/cardPayment";
 import  Icon  from "react-native-vector-icons/FontAwesome";
-import { useEffect, useState } from "react";
 
 function PaymentScreen({ navigation }) {
   return (

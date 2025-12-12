@@ -1,0 +1,97 @@
+Project Overview
+
+Project Name: Coffee Shop Mobile App (React Native / Stripe Payments)
+Description:
+A mobile e-commerce app for coffee products that allows users to browse products, add them to cart, manage favorites, and complete orders with Stripe payment integration.
+
+Technologies Used
+
+React Native & Expo – for cross-platform mobile app development (iOS & Android).
+
+React Navigation – for stack navigation between screens.
+
+Zustand – for state management (cart, orders, search).
+
+Stripe React Native SDK – to handle secure payments.
+
+Axios / Fetch – to communicate with backend API.
+
+Expo LinearGradient & Vector Icons – UI enhancements and icons.
+
+App Features
+
+Home Screen
+
+Displays coffee categories and products.
+
+Search functionality for products by name.
+
+Product Detail Screen
+
+Shows product information and price.
+
+Add product to cart with quantity management.
+
+Cart / Shopping Bag Screen
+
+Lists all added products with total price calculation.
+
+Allows checkout with Stripe Payment Sheet.
+
+Favorites Screen
+
+Users can save favorite products for later.
+
+Stripe Payment Integration
+
+Secure checkout using Payment Sheet.
+
+Handles various payment methods.
+
+Shows order confirmation after successful payment.
+
+State Management
+
+Cart and order management using Zustand.
+
+Persistent and reactive updates of product quantity.
+
+Project Tools & Tech Stack
+Core
+
+React Native 0.79.2 – cross-platform mobile development
+
+Expo 53.0.7 – app development and build tooling
+
+React 19.0.0 – UI library
+
+Navigation
+
+@react-navigation/native – routing & navigation
+
+@react-navigation/native-stack – stack-based navigation
+
+State Management
+
+Zustand 4.5.2 – global state for cart, orders, and favorites
+
+UI & Styling
+
+expo-linear-gradient – gradients for headers & backgrounds
+
+@expo/vector-icons / react-native-vector-icons – icons
+
+expo-font / expo-asset – custom fonts and assets management
+
+expo-status-bar – status bar management
+
+Backend & API
+
+Axios 1.6.8 – API requests for products and order handling
+
+Payments
+
+@stripe/stripe-react-native 0.45.0 – Stripe Payment Sheet integration
+
+@stripe/stripe-terminal-react-native 0.0.1-beta.17 – optional Stripe terminal support
+

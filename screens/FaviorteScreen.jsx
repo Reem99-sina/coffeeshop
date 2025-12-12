@@ -2,6 +2,7 @@ import {
   FlatList,
   Image,
   Pressable,
+  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -12,19 +13,18 @@ import Icon from "react-native-vector-icons/SimpleLineIcons";
 
 import { useFaviorteModal } from "../store/faviorteCart";
 import { useState } from "react";
-import { LinearGradient } from "expo-linear-gradient";
-// import IconColor from "react-native-vector-icons/AntDesign";
+
 
 function FaviorteScreen({ navigation }) {
   let [extend, setExtend] = useState(false);
 
-  let { faviorte, addfaviorte, removefaviorte } = useFaviorteModal(
+  let { faviorte } = useFaviorteModal(
     (state) => state
   );
 
   return (
-    <View>
-         <StatusBar
+    <SafeAreaView>
+      <StatusBar
         animated={true}
         backgroundColor="#61dafb"
         barStyle={"dark-content"}
@@ -39,37 +39,49 @@ function FaviorteScreen({ navigation }) {
           <Text style={styles.mainText}>faviorte</Text>
         </View>
       </ScrollView>
-      
+
       <FlatList
         data={faviorte}
         scrollEnabled={true}
-        style={{marginBottom:200}}
+        style={{ marginBottom: 200 }}
         renderItem={({ item }) => {
           return (
             <>
               <View
                 key={item.id}
-                style={{ flex: 1, borderRadius: 16, marginHorizontal: 10,position:"relative" }}
+                style={{
+                  flex: 1,
+                  borderRadius: 16,
+                  marginHorizontal: 10,
+                  position: "relative",
+                }}
               >
                 <Image
                   source={{ uri: item.image }}
                   height={300}
                   style={{ borderRadius: 16 }}
                 />
-                <View style={{position:"absolute",backgroundColor:"rgba(52, 52, 52, 0.8)",bottom:0}}>
-                <View style={{ marginVertical: 20,padding:10 }}>
-                  <Text style={{color:"white"}}>{item.title}</Text>
-                  <Text style={{color:"white"}}>
-                    {extend ? item.description : item.description.slice(0, 100)}
-                  </Text>
-                  <Pressable onPress={() => setExtend(!extend)}>
-                    <Text style={{ color: "#C67C4E" }}>
-                      {extend ? "Read Less" : "Read more"}
+                <View
+                  style={{
+                    position: "absolute",
+                    backgroundColor: "rgba(52, 52, 52, 0.8)",
+                    bottom: 0,
+                  }}
+                >
+                  <View style={{ marginVertical: 20, padding: 10 }}>
+                    <Text style={{ color: "white" }}>{item.title}</Text>
+                    <Text style={{ color: "white" }}>
+                      {extend
+                        ? item.description
+                        : item.description.slice(0, 100)}
                     </Text>
-                  </Pressable>
+                    <Pressable onPress={() => setExtend(!extend)}>
+                      <Text style={{ color: "#C67C4E" }}>
+                        {extend ? "Read Less" : "Read more"}
+                      </Text>
+                    </Pressable>
+                  </View>
                 </View>
-                </View>
-                
               </View>
             </>
           );
@@ -80,8 +92,7 @@ function FaviorteScreen({ navigation }) {
           <Text style={styles.EmtpyText}>No product faviorte</Text>
         }
       />
-      
-    </View>
+    </SafeAreaView>
   );
 }
 export default FaviorteScreen;

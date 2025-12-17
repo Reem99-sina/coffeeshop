@@ -1,9 +1,5 @@
 import { useMemo, useState } from "react";
-import {
-  Image,
-  Pressable,
-  SafeAreaView,
-} from "react-native";
+import { Image, Pressable, SafeAreaView, StatusBar } from "react-native";
 import { StyleSheet, Text, View } from "react-native";
 import Icon from "react-native-vector-icons/SimpleLineIcons";
 import { useFaviorteModal } from "../store/faviorteCart";
@@ -31,6 +27,7 @@ function ProductDetailScreens({ route, navigation }) {
 
   return (
     <SafeAreaView>
+      <StatusBar backgroundColor="#2f3334ff" barStyle="dark-content" />
       <View style={styles.container}>
         <Icon name="arrow-left" size={20} onPress={() => navigation.goBack()} />
         <Text style={styles.mainText}>Detail</Text>

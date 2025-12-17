@@ -9,13 +9,8 @@ function Card({ title, description, ingredients, image, id }) {
 
   return (
     <View key={id} style={styles.container}>
-      <View>
-        <Image
-          source={imageSource}
-          height={200}
-          resizeMode="center"
-          style={{ borderRadius: 16 }}
-        />
+      <View style={{ alignItems: "center" }}>
+        <Image source={imageSource} resizeMode="cover" style={styles.image} />
       </View>
       <Text style={styles.textMain}>{title}</Text>
       <Text style={styles.description}>{description.slice(0, 20)}...</Text>
@@ -36,7 +31,13 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 16,
     gap: 10,
-    alignItems: "start",
+    padding: 10,
+  },
+
+  image: {
+    width: "100%", // ✅ full card width
+    height: 120, // choose height you like
+    borderRadius: 16,
   },
   textMain: {
     fontWeight: "bold",

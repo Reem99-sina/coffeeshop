@@ -10,6 +10,7 @@ import {
   Linking,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import ProductDetailScreens from "./screens/ProductDetailScreens";
@@ -18,27 +19,34 @@ import { useOrderModal } from "./store/storeCart";
 import CartScreen from "./screens/CartScreen";
 import FaviorteScreen from "./screens/FaviorteScreen";
 import { useCallback, useEffect, useMemo, useState } from "react";
-
 import { StripeProvider, useStripe } from "@stripe/stripe-react-native";
 import axios from "axios";
+import RegisterScreens from "./screens/RegisterScreen";
+import { IconsMenu } from "./componets/IconsMenu";
+import LoginScreens from "./screens/LoginScreen";
+import { useUserModal } from "./store/user";
+import { createNavigationContainerRef } from "@react-navigation/native";
 
+export const navigationRef = createNavigationContainerRef();
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   let [loadingorder, setloading] = useState(false);
 
-  let { order, addOrder, updateOrder, removeOrder } = useOrderModal(
+  let { order, addOrder, updateOrder, deleteOrder } = useOrderModal(
     (state) => state
   );
-
+  let { user } = useUserModal((state) => state);
   let totalPrice = useMemo(() => {
     return order.reduce((total, ele) => ele?.id * ele?.count + total, 0);
   }, [order]);
 
+  let eachPrice = useMemo(() => {
+    return (id) => order.find((ele) => ele?.id === id);
+  }, []);
+
   const AddOrderCheck = useCallback(
     (item) => {
-      setloading(true);
-
       // check if the item exists by id
       const existing = order.find((o) => o.id === item.id);
 
@@ -46,24 +54,33 @@ export default function App() {
         // increment count
         updateOrder(item.id);
       } else {
-        // add new item with count 1
         addOrder(item);
       }
 
-      addOrderBack(); // send to backend
+      // addOrderBack(); // send to backend
     },
     [order, addOrder, updateOrder]
   );
 
   const addOrderBack = async () => {
     await axios
-      .post("https://stripe-izin.onrender.com/order", { data: order })
+      .post(
+        "https://stripe-izin.onrender.com/order",
+        {  products: order },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.token}`, // <-- add your token here
+          },
+        }
+      )
       .then(() => {
         Alert.alert("done in add order in database");
       })
       .catch(() => Alert.alert("error in add order in database"))
       .finally(() => setloading(false));
   };
+
   const { initPaymentSheet, presentPaymentSheet, handleURLCallback } =
     useStripe();
   const [, setLoading] = useState(false);
@@ -77,7 +94,7 @@ export default function App() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          amount: totalPrice ? Number(totalPrice) : 67,
+          amount: totalPrice ? Math.round(totalPrice * 100) : 67,
           currency: "usd",
         }),
       }
@@ -92,7 +109,7 @@ export default function App() {
   };
 
   const initializePaymentSheet = async () => {
-    const { paymentIntent, ephemeralKey, customer, publishableKey } =
+    const { paymentIntent, ephemeralKey, customer } =
       await fetchPaymentSheetParams();
     const initialUrl = await Linking.getInitialURL();
     const stripeHandled = await handleURLCallback(initialUrl);
@@ -106,10 +123,7 @@ export default function App() {
       //methods that complete payment after a delay, like SEPA Debit and Sofort.
       allowsDelayedPaymentMethods: true,
       defaultBillingDetails: {
-        name: "Jane Doe",
-        address: "",
-        email: "",
-        phone: "",
+        user,
       },
       returnURL: stripeHandled,
     });
@@ -119,26 +133,44 @@ export default function App() {
     }
   };
   const openPaymentSheet = async () => {
-    const { error } = await presentPaymentSheet();
-    if (error) {
-      Alert.alert(`Error code: ${error.code}`, error.message);
+    if (user.name) {
+      initializePaymentSheet().then(() => {
+        addOrderBack()
+          .then(async () => {
+            const { error } = await presentPaymentSheet();
+            if (error) {
+              Alert.alert(`Error code: ${error.code}`, error.message);
+            } else {
+              Alert.alert("Success", "Your order is confirmed!");
+              deleteOrder();
+            }
+          })
+          .catch((error) => {
+            Alert.alert("Error in adding order to database");
+          })
+          .finally(() => setloading(false));
+      });
     } else {
-      Alert.alert("Success", "Your order is confirmed!");
-      removeOrder();
+      Alert.alert("Please login", "You need to login to proceed with payment", [
+        {
+          text: "Login",
+          onPress: () => {
+            if (navigationRef.isReady()) {
+              navigationRef.navigate("login");
+            }
+          },
+        },
+        { text: "Cancel", style: "cancel" },
+      ]);
     }
   };
-  useEffect(() => {
-    if (order.length >= 0) {
-      initializePaymentSheet();
-    }
-  }, [order]);
 
   return (
     <StripeProvider
       stripeAccountId="acct_1OnViJJ1yUQMPxwp"
       publishableKey="pk_test_51OnViJJ1yUQMPxwpHSfb0uZFYHJwEo0VBpr3AIRmGwdw6tli8fYgSIVHNn3IE6ZiPpaqplfmaJOx3vuBwaEnn6Kj00Psw1Yqxu"
     >
-      <NavigationContainer independent={true}>
+      <NavigationContainer ref={navigationRef} independent={true}>
         <Stack.Navigator initialRouteName="Home">
           <Stack.Screen
             name="Home"
@@ -146,51 +178,21 @@ export default function App() {
             options={{ headerShown: false }}
           />
           <Stack.Screen
+            name="register"
+            component={RegisterScreens}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="login"
+            component={LoginScreens}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
             name="Detail"
             component={TypesScreens}
             options={{
               header: (navigationOptions) => {
-                return (
-                  <View style={styles.styleHeader}>
-                    <Icon
-                      name="home"
-                      size={30}
-                      color={
-                        navigationOptions.route.name == "Detail"
-                          ? "#C67C4E"
-                          : "gray"
-                      }
-                      onPress={() =>
-                        navigationOptions.navigation.navigate("Detail")
-                      }
-                    />
-                    <Icon
-                      name="heart"
-                      size={30}
-                      color={
-                        navigationOptions.route.name == "Faviorte"
-                          ? "#C67C4E"
-                          : "gray"
-                      }
-                      onPress={() =>
-                        navigationOptions.navigation.navigate("Faviorte")
-                      }
-                    />
-                    <Icon
-                      name="shopping-bag"
-                      size={30}
-                      color={
-                        navigationOptions.route.name == "shopping-bag"
-                          ? "#C67C4E"
-                          : "gray"
-                      }
-                      onPress={() =>
-                        navigationOptions.navigation.navigate("shopping-bag")
-                      }
-                    />
-                    {/* <Icon name="notification" size={30} color="#C67C4E" onPress={()=>{}}/> */}
-                  </View>
-                );
+                return <IconsMenu navigationOptions={navigationOptions} />;
               },
             }}
           />
@@ -218,7 +220,7 @@ export default function App() {
                           fontWeight: "bold",
                         }}
                       >
-                        $ 4.35
+                        $ {route.params.item.id}
                       </Text>
                     </View>
                     {loadingorder ? (
@@ -227,7 +229,15 @@ export default function App() {
                       </View>
                     ) : (
                       <ButtonCustom
-                        title="Add to Cart"
+                        title={`Add to Cart ${
+                          order.find((ele) => ele?.id === route.params.item.id)
+                            ? `(${
+                                order.find(
+                                  (ele) => ele?.id === route.params.item.id
+                                ).count
+                              })`
+                            : ""
+                        }`}
                         onPress={() => {
                           AddOrderCheck(route.params.item);
                         }}
@@ -340,6 +350,8 @@ const styles = StyleSheet.create({
     width: "100%",
     backgroundColor: "#fff",
     justifyContent: "space-around",
+    gap: 20,
+    paddingHorizontal: 20,
   },
   stylePrice: {
     flexDirection: "row",
@@ -349,7 +361,6 @@ const styles = StyleSheet.create({
     marginVertical: 15,
     borderRadius: 16,
     width: "60%",
-
     paddingHorizontal: 20,
     paddingVertical: 15,
   },

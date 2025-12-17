@@ -1,4 +1,5 @@
 import {
+  FlatList,
   Image,
   Platform,
   Pressable,
@@ -7,25 +8,24 @@ import {
   Text,
   TextInput,
   View,
-  VirtualizedList,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Icon from "react-native-vector-icons/FontAwesome";
-import { useEffect,  useState } from "react";
+import { useEffect, useState } from "react";
 import Banner from "../componets/Banner";
 import { getProduct } from "../action/getProduct";
 import Card from "../componets/Card";
 import { useProductModal } from "../store/storeProduct";
+import { useUserModal } from "../store/user";
 
 function TypesScreens({ navigation }) {
-  let [searchInput, setSearch] = useState("");
-  let [, setLoading] = useState(false);
-
-  let [typecoffee, ] = useState("hot");
-  let [Result, setResult] = useState(null);
-  let { Product, addProduct } = useProductModal(
-    (state) => state
-  );
+  const [searchInput, setSearch] = useState("");
+  const [showMenu, setShowMenu] = useState(false);
+  const [, setLoading] = useState(false);
+  const { user, removeUser } = useUserModal((state) => state);
+  const [typecoffee] = useState("hot");
+  const [Result, setResult] = useState(null);
+  const { Product, addProduct } = useProductModal((state) => state);
   useEffect(() => {
     if (Result?.length > 0 && searchInput) {
       setResult(Result.filter((ele) => ele.title.includes(searchInput)));
@@ -36,9 +36,6 @@ function TypesScreens({ navigation }) {
 
     // scrollViewRef.current.scrollToEnd({ animated: true });
   }, [searchInput]);
-
-  const getItem = (data, index) => data[index];
-  const getItemCount = (data) => data.length;
 
   useEffect(() => {
     setLoading(true);
@@ -64,47 +61,96 @@ function TypesScreens({ navigation }) {
 
         <LinearGradient
           colors={["#313131", "#222222"]}
-          style={styles.styleGrad}
+          style={[styles.styleGrad, { height: user.name ? 350 : 200 }]}
         >
-          <View style={styles.styleProfile}>
-            <View>
-              <Text style={[styles.text]}>Location</Text>
-              <Text style={styles.textWhite}>Bilzen, Tanjungbalai</Text>
-            </View>
-            <View>
-              <Image source={require("../assets/profile.png")} />
-            </View>
-          </View>
-          <View style={styles.searchSection}>
-            <Icon
-              style={styles.searchIcon}
-              name="search"
-              size={20}
-              color="#fff"
-              onPress={() => navigation.navigate("Home")}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="User Nickname"
-              onChangeText={setSearch}
-              underlineColorAndroid="transparent"
-              value={searchInput}
-            />
-            <Pressable style={styles.menu}>
-              <Image
-                source={require("../assets/setting-4.png")}
-                width={20}
-                height={20}
-              />
-            </Pressable>
-          </View>
+          {user?.address ? (
+            <>
+              <View style={styles.styleProfile}>
+                <View>
+                  <Text style={[styles.text]}>{user.name}</Text>
+                  <Text style={styles.textWhite}>{user.address}</Text>
+                </View>
+                <Pressable
+                  style={styles.menu}
+                  onPress={() => setShowMenu((prev) => !prev)}
+                >
+                  <Image source={require("../assets/profile.png")} />
+                </Pressable>
+              </View>
+              {showMenu && (
+                <View style={styles.dropdownMenu}>
+                  <Pressable
+                    onPress={() => {
+                      // هنا تعملي logout
+                      removeUser();
+                      setShowMenu(false);
+                      navigation.navigate("login");
+                    }}
+                    style={styles.dropdownItem}
+                  >
+                    <Text style={{ color: "black" }}>Logout</Text>
+                  </Pressable>
+                </View>
+              )}
+              <View style={styles.searchSection}>
+                <Icon
+                  style={styles.searchIcon}
+                  name="search"
+                  size={20}
+                  color="#fff"
+                  onPress={() => navigation.navigate("Home")}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="User Nickname"
+                  onChangeText={setSearch}
+                  underlineColorAndroid="transparent"
+                  value={searchInput}
+                />
+                <Pressable style={styles.menu}>
+                  <Image
+                    source={require("../assets/setting-4.png")}
+                    width={20}
+                    height={20}
+                  />
+                </Pressable>
+              </View>
+            </>
+          ) : (
+            <>
+              <View>
+                <Pressable
+                  style={{
+                    flexDirection: "row",
+
+                    marginTop: 50,
+                    paddingHorizontal: 20,
+                    // backgroundColor: "red",
+                    justifyContent: "flex-end",
+                  }}
+                  onPress={() => navigation.navigate("login")}
+                >
+                  <Text style={{ fontSize: 24, color: "#fff" }}>Login</Text>
+                </Pressable>
+              </View>
+            </>
+          )}
         </LinearGradient>
+
         <Banner />
-        <View style={{ flex: 5, alignItems: "center", marginVertical: 20 }}>
-          <VirtualizedList
-            style={{ paddingVertical: 10, marginBottom: 100 }}
+        <View
+          style={{
+            flex: 5,
+            alignItems: "center",
+            marginVertical: 20,
+            width: "100%",
+            paddingHorizontal: 30,
+          }}
+        >
+          <FlatList
+            style={{ paddingVertical: 10, marginBottom: 100, width: "100%" }}
             data={Result || []}
-            initialNumToRender={10} // عدد العناصر التي سيتم عرضها أولاً
+            initialNumToRender={10}
             renderItem={({ item }) => (
               <Pressable
                 onPress={() => navigation.navigate("ProductDetail", { item })}
@@ -112,9 +158,9 @@ function TypesScreens({ navigation }) {
                 <Card {...item} />
               </Pressable>
             )}
-            keyExtractor={(item) => item.id.toString()} // تأكدي أن id string
-            getItemCount={getItemCount}
-            getItem={getItem}
+            keyExtractor={(item) => item.id.toString()}
+            numColumns={2} // ✅ number of columns you want
+            columnWrapperStyle={{ justifyContent: "center", gap: 30 }}
             ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
           />
         </View>
@@ -128,7 +174,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   styleGrad: {
-    height: 300,
     width: "100%",
   },
   styleProfile: {
@@ -179,5 +224,19 @@ const styles = StyleSheet.create({
   },
   active: {
     backgroundColor: "#C67C4E",
+  },
+  dropdownMenu: {
+    position: "absolute",
+    top: 120, // تعديل حسب مكان الـ button
+    right: 0,
+    left: 0,
+    backgroundColor: "#ffffffff",
+    borderRadius: 10,
+    padding: 10,
+    zIndex: 1000,
+  },
+  dropdownItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
   },
 });

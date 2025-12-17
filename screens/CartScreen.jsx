@@ -61,6 +61,8 @@ function CartScreen({ navigation }) {
                     position: "absolute",
                     backgroundColor: "rgba(52, 52, 52, 0.8)",
                     bottom: 0,
+                    inset: 0,
+                    top: "50%",
                   }}
                 >
                   <View style={{ marginVertical: 20, padding: 10, gap: 10 }}>

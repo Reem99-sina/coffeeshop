@@ -114,8 +114,8 @@ function CardPayment() {
         onFormComplete={(complete) => setCardDetail(complete)}
         dangerouslyGetFullCardDetails={true}
       />
-      <AddressSheet visible={true}/>
-      <AddressCollectionMode />
+      {/* <AddressSheet visible={true}/> */}
+      {/* <AddressCollectionMode /> */}
     </>
   );
 }
